@@ -1,34 +1,39 @@
-import { createStore, applyMiddleware } from "redux";
-import thunk from "redux-thunk";
-
 import {
   ActionTypes,
-  SET_TODOS,
+  ADD_TODO,
   DELETE_TODO,
+  SET_TODOS,
+  TOGGLE_TODO,
   SET_NEWTODO,
   UPDATE_TODO,
-  TOGGLE_TODO,
-  ADD_TODO,
-} from "./actions";
-import { Store, Todo } from "./types";
+} from './actions';
+import { Store } from './types';
+import { createStore, applyMiddleware } from 'redux'
+import thunk from 'redux-thunk';
 
 // Standard interface and functions
-const updateTodo = (todos: Todo[], id: number, text: string): Todo[] =>
+export interface Todo {
+  id: number;
+  text: string;
+  done: boolean;
+}
+
+export const updateTodo = (todos: Todo[], id: number, text: string): Todo[] =>
   todos.map((todo) => ({
     ...todo,
     text: todo.id === id ? text : todo.text,
   }));
 
-const toggleTodo = (todos: Todo[], id: number): Todo[] =>
+export const toggleTodo = (todos: Todo[], id: number): Todo[] =>
   todos.map((todo) => ({
     ...todo,
     done: todo.id === id ? !todo.done : todo.done,
   }));
 
-const removeTodo = (todos: Todo[], id: number): Todo[] =>
+export const removeTodo = (todos: Todo[], id: number): Todo[] =>
   todos.filter((todo) => todo.id !== id);
 
-const addTodo = (todos: Todo[], text: string): Todo[] => [
+export const addTodo = (todos: Todo[], text: string): Todo[] => [
   ...todos,
   {
     id: Math.max(0, Math.max(...todos.map(({ id }) => id))) + 1,
@@ -37,12 +42,11 @@ const addTodo = (todos: Todo[], text: string): Todo[] => [
   },
 ];
 
-// Redux implementation
+//Redux implementation reducer takes initial state
+
+//action types
 function todoReducer(
-  state: Store = {
-    todos: [],
-    newTodo: "",
-  },
+  state: Store = { todos: [], newTodo: '' },
   action: ActionTypes
 ) {
   switch (action.type) {
@@ -56,6 +60,7 @@ function todoReducer(
         ...state,
         newTodo: action.payload,
       };
+
     case UPDATE_TODO:
       return {
         ...state,
@@ -64,8 +69,10 @@ function todoReducer(
     case TOGGLE_TODO:
       return {
         ...state,
+        newTodo: '',
         todos: toggleTodo(state.todos, action.payload),
       };
+
     case DELETE_TODO:
       return {
         ...state,
@@ -74,14 +81,16 @@ function todoReducer(
     case ADD_TODO:
       return {
         ...state,
-        newTodo: "",
+        newTodo: '',
         todos: addTodo(state.todos, state.newTodo),
       };
+
     default:
       return state;
   }
 }
-
+//create store with reducer and apply the middleware
+//const store = createStore(todoReducer);
 const store = createStore(todoReducer, applyMiddleware(thunk));
 
 export default store;
